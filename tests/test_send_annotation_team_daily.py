@@ -130,6 +130,21 @@ def test_weekly_period_is_previous_friday_through_thursday():
     )
 
 
+def test_working_staff_uses_public_template_field_name():
+    daily = _load_daily_module()
+    response = {
+        "fields": ["人员", "是否在岗"],
+        "data": [[[{"name": "甲"}], "工作中"]],
+    }
+
+    with patch.object(daily, "run_lark_base", return_value=response) as run:
+        assert daily.get_working_staff() == ["甲"]
+
+    args = run.call_args.args[0]
+    assert "人员" in args
+    assert "人员 (人员 )" not in args
+
+
 def test_progress_range_uses_supported_exclusive_date_operators():
     daily = _load_daily_module()
     empty_result = {"fields": [], "record_id_list": [], "data": []}

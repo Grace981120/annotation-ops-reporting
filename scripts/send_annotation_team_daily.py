@@ -328,7 +328,7 @@ def get_working_staff() -> list[str]:
             "--filter-json",
             filter_json,
             "--field-id",
-            "人员 (人员 )",
+            "人员",
             "--field-id",
             "是否在岗",
             "--limit",

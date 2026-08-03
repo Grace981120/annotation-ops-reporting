@@ -1,100 +1,153 @@
 # Annotation Ops Reporting
 
-一套可自托管的数据标注运营报表工具：从 MySQL 汇总待标注量、已标注量、正样本与覆盖指标，同步到飞书多维表格，并向飞书群发送日报和周报卡片。
+把“今天标了多少、库存还剩多少、质量是否达标、什么时候能完成”从人工追问，变成每天自动送达的飞书经营简报。
 
-## 能力
+这是一个面向数据标注团队的轻量运营系统：MySQL 负责事实数据，飞书多维表格承载目标、人员和日报，脚本负责汇总计算，飞书群机器人负责把结论送到团队和管理者面前。
 
-- 定时查询标注库存、产出、正样本和本周增量
-- 将指标 upsert 到飞书多维表格
-- 汇总个人提交、任务投入、效率与目标预测
-- 发送详细日报、管理摘要和周四周报
-- 支持 dry-run、卡片结构校验、失败重试和指标对账
-- 运行时配置与代码分离，不在仓库保存真实凭据或资源 ID
+## 为什么需要它
 
-## 工作流
+很多标注团队已经有标注平台、数据库和日报，但管理信息仍然是割裂的：库存要问研发，个人产出要翻表格，质量与目标要手算，周报还要重复整理。
+
+本项目解决四个持续发生的问题：
+
+| 管理问题 | 系统给出的答案 |
+| --- | --- |
+| 今天团队有没有正常运转？ | 已提交人数、未提交人员、个人产出与投入 |
+| 当前任务是否健康？ | 待标注、已标注、正样本、正样本率、本周增量 |
+| 谁或哪个任务需要关注？ | 效率排行、低于基线提醒、任务投入分布 |
+| 目标什么时候能完成？ | 预计正样本、达到目标与清空库存所需人天 |
+
+它不是新的标注工具，而是位于标注平台之上的“运营驾驶舱”。
+
+## 你会得到什么
+
+### 一套数据底座
+
+配套多维表格包含四张表：
+
+- **项目任务**：任务、产能基线、单位与分类
+- **标注日报**：提交人、当日产出、投入时间和基线达成率
+- **团队人员**：在岗成员与日报提交范围
+- **标注指标**：库存、累计产出、正样本、覆盖人数和目标预测
+
+完整字段见 [多维表格模板结构](docs/base-schema.md)。
+
+### 三类自动报告
+
+- **团队详细日报**：提交情况、个人排行、低基线提醒、投入分布和任务全景
+- **管理精简日报**：保留核心进展与风险，适合管理群快速阅读
+- **周报**：汇总周五至次周周四的投入、产出、效率、目标差距和每日回顾
+
+### 一条自动化链路
 
 ```text
-MySQL (read-only)
-  -> scripts/sync_bitable.py
-  -> Feishu Base metrics table
-  -> scripts/send_annotation_team_daily.py
-  -> daily / management / weekly webhook cards
+只读 MySQL
+  -> 指标汇总与口径对账
+  -> 飞书多维表格
+  -> 日报 / 管理摘要 / 周报卡片
+  -> 飞书群机器人
 ```
 
-## 前置条件
+## 适合谁
 
-- Python 3.11+
-- `lark-cli`，并以用户身份完成飞书授权
-- MySQL 只读账号
-- 一个飞书多维表格，包含日报、人员、项目和指标数据表
-- 三个飞书群机器人 webhook（可以指向同一个机器人）
+- 5～100 人的数据标注或数据运营团队
+- 已经有 MySQL 数据源，并用飞书协作的团队
+- 希望保留自己的数据口径，不想引入重型 BI 平台的团队
+- 需要同时关注数量、正样本质量、人员投入和交付目标的项目
 
-安装：
+如果你的业务表结构不同，可以保留报表和多维表格层，只替换 `sync_bitable.py` 中的 SQL 适配器。
+
+## 5 分钟了解如何使用
+
+### 1. 准备运行环境
+
+需要 Python 3.11+、一个 MySQL 只读账号、已登录的 `lark-cli`，以及飞书群机器人 webhook。
 
 ```bash
+git clone https://github.com/Grace981120/annotation-ops-reporting.git
+cd annotation-ops-reporting
 python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[test]'
 cp .env.example .env
 ```
 
-将 `.env` 中的占位值替换为自己的值，再加载环境变量。`.env` 已被忽略，不能提交。
-
-## 多维表格配置
-
-脚本按以下逻辑表读取数据：
-
-| 环境变量 | 用途 |
-| --- | --- |
-| `ANNOTATION_DAILY_TABLE_ID` | 每日个人进度与投入 |
-| `ANNOTATION_STAFF_TABLE_ID` | 在岗人员名单 |
-| `ANNOTATION_PROJECT_TABLE_ID` | 项目目标、基准效率和任务类型 |
-| `ANNOTATION_METRICS_TABLE_ID` | 各标注类型的库存与产出指标 |
-
-`ANNOTATION_RECORD_MAP_JSON` 将指标 code 映射到指标表中的记录 ID。字段名和 SQL 体现了一个完整的参考实现；接入其他标注平台时，应在两个脚本的数据读取函数中适配自己的表名和字段名。
-
-飞书 Base token、table ID、record ID 都属于部署配置，不应写进源码。仓库不会自动创建或复制包含真实运营数据的多维表格。
-
-## 凭据
-
-数据库密码优先读取 `ANNOTATION_DB_PASSWORD`。macOS 也可设置：
+填写 `.env` 后，将配置加载到当前 shell：
 
 ```bash
-export ANNOTATION_KEYCHAIN_ACCOUNT=annotation-reporting
-export ANNOTATION_KEYCHAIN_SERVICE=annotation-reporting-db
+set -a
+source .env
+set +a
 ```
 
-Webhook 可通过 `ANNOTATION_DETAIL_WEBHOOK_URL`、`ANNOTATION_FORMAL_WEBHOOK_URL`、`ANNOTATION_WEEKLY_WEBHOOK_URL` 提供。macOS 用户也可以改用对应的 `*_KEYCHAIN_ACCOUNT` 与 `*_KEYCHAIN_SERVICE`。
+### 2. 准备多维表格
 
-推荐使用密钥认证的 SSH 隧道；启用时设置 `ANNOTATION_USE_SSH_TUNNEL=1`、`ANNOTATION_SSH_HOST` 和 `ANNOTATION_SSH_USER`。
+在自己的飞书空间创建一个 Base，按 [多维表格模板结构](docs/base-schema.md) 建立四张表。模板只需要写入任务名称和目标，不要导入真实人员或历史日报作为代码样例。
 
-## 运行
+然后把 Base token、四张表的 table ID，以及“标注指标”各行的 record ID 写入本地 `.env`。这些值属于部署配置，不能提交到 GitHub。
 
-只查询数据库，不写飞书：
+### 3. 配置数据源和消息出口
+
+在 `.env` 中填写：
+
+- `ANNOTATION_MYSQL_*`：只读数据库连接
+- `ANNOTATION_BASE_TOKEN` 与四个 `*_TABLE_ID`
+- `ANNOTATION_RECORD_MAP_JSON`：指标 code 到记录 ID 的映射
+- `ANNOTATION_*_WEBHOOK_URL`：详细日报、管理摘要、周报的机器人地址
+
+macOS 也可以把数据库密码和 webhook 放进 Keychain。SSH 隧道默认关闭，启用时推荐密钥认证。
+
+### 4. 先试跑，再发送
+
+只查询数据库，不写多维表格：
 
 ```bash
 python scripts/sync_bitable.py --dry-run
 ```
 
-同步多维表格：
+确认统计口径后同步指标：
 
 ```bash
 python scripts/sync_bitable.py
 ```
 
-发送指定日期日报；周四会额外生成前一周周五至本周周四的周报：
+发送指定日期日报；周四会额外发送周报：
 
 ```bash
 python scripts/send_annotation_team_daily.py --date 2026-08-03
 ```
 
-如果指标表已由其他任务刷新，可跳过数据库同步：
+如果指标已由其他任务刷新：
 
 ```bash
 python scripts/send_annotation_team_daily.py --skip-sync
 ```
 
-生产环境可用 cron、launchd、systemd timer 或 CI 定时任务调度。请把秘密放在调度器的 secret store 中。
+### 5. 放到定时任务中
+
+建议每小时同步一次指标，在下班后发送日报。可使用 cron、launchd、systemd timer 或 CI scheduler；秘密应放在调度器的 secret store 中。
+
+```cron
+0 * * * * cd /path/to/repo && set -a && . ./.env && set +a && .venv/bin/python scripts/sync_bitable.py
+30 18 * * 1-5 cd /path/to/repo && set -a && . ./.env && set +a && .venv/bin/python scripts/send_annotation_team_daily.py --skip-sync
+```
+
+## 数据口径
+
+参考实现覆盖人员轨迹和多类异常行为，统计待标注、已标注、正样本、本周正样本和人员覆盖等指标。人员倒地按自有数据与外部数据源拆分，并在写表前执行总量对账。
+
+SQL 依赖示例业务表结构，接入自己的平台时需要修改查询，但报表数据集、卡片构建、重试与校验逻辑可以复用。
+
+## 运维与安全
+
+- 数据库账号必须只读
+- 真实 `.env`、日志、数据库导出和报告载荷不得提交
+- Base token、table ID、record ID 和 webhook 仅存于环境变量或本地秘密存储
+- SSH 隧道使用密钥认证并校验服务器主机密钥
+- 先运行 `--dry-run` 核对 SQL 口径，再允许写入飞书
+- 卡片发送包含结构校验和失败重试，但仍应监控定时任务退出码
+
+详见 [Security Policy](SECURITY.md)。
 
 ## 测试
 
@@ -102,13 +155,15 @@ python scripts/send_annotation_team_daily.py --skip-sync
 pytest
 ```
 
-测试使用模拟命令、内存 SQLite 和示例记录，不连接生产数据库或真实飞书资源。
+测试使用内存 SQLite、模拟命令和虚构人员，不连接真实数据库或飞书资源。
 
-## 安全说明
+## 当前边界
 
-公开前需确认仓库中没有 `.env`、日志、数据库导出、真实 webhook、飞书资源 ID、内网地址、姓名、邮箱或报告内容。详见 [SECURITY.md](SECURITY.md)。
+- 这是可自托管的参考实现，不是托管 SaaS
+- 多维表格 schema 已文档化，但每个部署者必须在自己的飞书空间创建副本
+- 数据库 SQL 是示例适配器，不承诺兼容其他标注平台的表结构
+- 目前通过飞书自定义机器人发送卡片，不包含独立 Web 管理后台
 
 ## License
 
 [MIT](LICENSE)
-
