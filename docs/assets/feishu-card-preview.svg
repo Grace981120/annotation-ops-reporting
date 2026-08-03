@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">飞书数据标注日报与周报卡片 mock 预览</title>
+  <desc id="desc">包含团队详细日报、管理精简日报和周报三张使用虚构数据的卡片。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f7ff"/>
+      <stop offset="1" stop-color="#eef2f8"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3370ff"/>
+      <stop offset="1" stop-color="#5b8cff"/>
+    </linearGradient>
+    <linearGradient id="purple" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7b4dff"/>
+      <stop offset="1" stop-color="#a06bff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#26334d" flood-opacity="0.12"/>
+    </filter>
+    <style>
+      text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; fill: #1f2329; }
+      .muted { fill: #8f959e; }
+      .white { fill: #ffffff; }
+      .label { font-size: 12px; font-weight: 600; letter-spacing: .5px; }
+      .small { font-size: 11px; }
+      .body { font-size: 13px; }
+      .metric { font-size: 24px; font-weight: 700; }
+      .title { font-size: 17px; font-weight: 700; }
+      .section { font-size: 13px; font-weight: 700; }
+      .rule { stroke: #e5e6eb; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="760" rx="24" fill="url(#bg)"/>
+  <text x="40" y="42" font-size="20" font-weight="700">飞书卡片预览</text>
+  <rect x="193" y="23" width="76" height="28" rx="14" fill="#e1eaff"/>
+  <text x="231" y="42" text-anchor="middle" font-size="12" font-weight="600" fill="#245bdb">MOCK DATA</text>
+  <text x="1240" y="42" text-anchor="end" class="muted" font-size="12">不含真实任务、人员或指标</text>
+
+  <!-- Detailed daily card -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="70" width="560" height="650" rx="16" fill="#ffffff"/>
+    <path d="M56 70h528a16 16 0 0 1 16 16v72H40V86a16 16 0 0 1 16-16z" fill="url(#blue)"/>
+  </g>
+  <circle cx="76" cy="108" r="18" fill="#ffffff" fill-opacity=".2"/>
+  <path d="M68 108h16M76 100v16" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+  <text x="108" y="105" class="white title">数据标注团队日报</text>
+  <text x="108" y="129" class="white" font-size="12" opacity=".82">2026-08-03 · 详细版</text>
+  <rect x="506" y="94" width="70" height="28" rx="14" fill="#ffffff" fill-opacity=".18"/>
+  <text x="541" y="112" text-anchor="middle" class="white label">运行正常</text>
+
+  <text x="64" y="185" class="section">01  今日概览</text>
+  <rect x="64" y="200" width="120" height="72" rx="10" fill="#f5f7ff"/>
+  <text x="78" y="220" class="muted small">已提交人数</text><text x="78" y="253" class="metric">4</text>
+  <rect x="194" y="200" width="120" height="72" rx="10" fill="#f5f7ff"/>
+  <text x="208" y="220" class="muted small">日报记录</text><text x="208" y="253" class="metric">4</text>
+  <rect x="324" y="200" width="120" height="72" rx="10" fill="#f5f7ff"/>
+  <text x="338" y="220" class="muted small">总投入</text><text x="338" y="253" class="metric">4.0<tspan font-size="12" font-weight="500"> 人天</tspan></text>
+  <rect x="454" y="200" width="120" height="72" rx="10" fill="#f3fbf7"/>
+  <text x="468" y="220" class="muted small">未提交</text><text x="468" y="253" class="metric" fill="#16a36a">0</text>
+
+  <text x="64" y="306" class="section">02  效率排行</text>
+  <line x1="64" y1="321" x2="576" y2="321" class="rule"/>
+  <text x="72" y="343" class="muted small">人员</text><text x="235" y="343" class="muted small">任务</text><text x="520" y="343" class="muted small">达成率</text>
+  <circle cx="82" cy="368" r="11" fill="#fff0cc"/><text x="82" y="372" text-anchor="middle" font-size="11" font-weight="700" fill="#b26b00">1</text>
+  <text x="104" y="372" class="body">标注员甲</text><text x="235" y="372" class="body">商品图片分类</text><text x="548" y="372" text-anchor="middle" class="body" font-weight="700" fill="#16a36a">107.5%</text>
+  <circle cx="82" cy="398" r="11" fill="#edf1f8"/><text x="82" y="402" text-anchor="middle" class="small">2</text>
+  <text x="104" y="402" class="body">标注员丙</text><text x="235" y="402" class="body">客服文本实体标注</text><text x="548" y="402" text-anchor="middle" class="body" font-weight="700" fill="#16a36a">105.0%</text>
+  <circle cx="82" cy="428" r="11" fill="#fff2e8"/><text x="82" y="432" text-anchor="middle" class="small">3</text>
+  <text x="104" y="432" class="body">标注员乙</text><text x="235" y="432" class="body">道路目标框选</text><text x="548" y="432" text-anchor="middle" class="body" font-weight="700" fill="#16a36a">104.3%</text>
+
+  <text x="64" y="474" class="section">03  任务综合进度</text>
+  <line x1="64" y1="489" x2="576" y2="489" class="rule"/>
+  <text x="72" y="511" class="muted small">任务</text><text x="300" y="511" class="muted small">目标进度</text><text x="500" y="511" class="muted small">正样本率</text>
+  <text x="72" y="540" class="body">商品图片分类</text><rect x="240" y="529" width="165" height="10" rx="5" fill="#e8edfa"/><rect x="240" y="529" width="111" height="10" rx="5" fill="#3370ff"/><text x="418" y="540" class="small">67.3%</text><text x="530" y="540" class="body" fill="#16a36a">81.5%</text>
+  <text x="72" y="572" class="body">客服文本实体标注</text><rect x="240" y="561" width="165" height="10" rx="5" fill="#e8edfa"/><rect x="240" y="561" width="151" height="10" rx="5" fill="#3370ff"/><text x="418" y="572" class="small">91.6%</text><text x="530" y="572" class="body" fill="#16a36a">94.6%</text>
+  <text x="72" y="604" class="body">多模态结果质检</text><rect x="240" y="593" width="165" height="10" rx="5" fill="#e8edfa"/><rect x="240" y="593" width="143" height="10" rx="5" fill="#7b4dff"/><text x="418" y="604" class="small">86.4%</text><text x="530" y="604" class="body" fill="#16a36a">90.0%</text>
+  <rect x="64" y="636" width="512" height="56" rx="10" fill="#f7f8fa"/>
+  <text x="80" y="658" class="muted small">风险提示</text>
+  <text x="80" y="678" class="body">道路目标框选预计还需 6.9 人天达到目标，建议关注库存消化速度。</text>
+
+  <!-- Management summary card -->
+  <g filter="url(#shadow)"><rect x="630" y="70" width="290" height="410" rx="16" fill="#fff"/><path d="M646 70h258a16 16 0 0 1 16 16v66H630V86a16 16 0 0 1 16-16z" fill="#1f6f5c"/></g>
+  <text x="654" y="102" class="white title">管理摘要</text><text x="654" y="126" class="white small" opacity=".82">2026-08-03 · 精简版</text>
+  <text x="654" y="180" class="section">今日结论</text>
+  <rect x="654" y="194" width="242" height="62" rx="10" fill="#f2faf6"/>
+  <circle cx="675" cy="225" r="10" fill="#21b573"/><path d="m670 225 3 3 6-7" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+  <text x="693" y="221" class="body" font-weight="700">团队提交完整</text><text x="693" y="241" class="muted small">4 人 · 4.0 人天 · 无缺报</text>
+  <text x="654" y="286" class="section">核心指标</text>
+  <text x="654" y="316" class="muted small">本周新增正样本</text><text x="878" y="316" text-anchor="end" class="body" font-weight="700">3,840</text>
+  <line x1="654" y1="329" x2="896" y2="329" class="rule"/>
+  <text x="654" y="354" class="muted small">平均基线达成率</text><text x="878" y="354" text-anchor="end" class="body" font-weight="700" fill="#16a36a">103.2%</text>
+  <line x1="654" y1="367" x2="896" y2="367" class="rule"/>
+  <text x="654" y="392" class="muted small">需关注任务</text><text x="878" y="392" text-anchor="end" class="body" font-weight="700" fill="#e36f24">1</text>
+  <rect x="654" y="416" width="242" height="40" rx="8" fill="#fff6e8"/><text x="775" y="441" text-anchor="middle" font-size="12" font-weight="600" fill="#b86b14">查看完整日报 →</text>
+
+  <!-- Weekly card -->
+  <g filter="url(#shadow)"><rect x="950" y="70" width="290" height="650" rx="16" fill="#fff"/><path d="M966 70h258a16 16 0 0 1 16 16v72H950V86a16 16 0 0 1 16-16z" fill="url(#purple)"/></g>
+  <text x="974" y="102" class="white title">数据标注运营周报</text><text x="974" y="128" class="white small" opacity=".82">07/31 – 08/06 · Mock</text>
+  <text x="974" y="186" class="section">01  周度概览</text>
+  <rect x="974" y="200" width="116" height="70" rx="10" fill="#f7f5ff"/><text x="988" y="220" class="muted small">总投入</text><text x="988" y="251" class="metric">11.0<tspan font-size="11"> 人天</tspan></text>
+  <rect x="1100" y="200" width="116" height="70" rx="10" fill="#f7f5ff"/><text x="1114" y="220" class="muted small">参与人数</text><text x="1114" y="251" class="metric">4</text>
+  <text x="974" y="306" class="section">02  任务投入</text>
+  <text x="974" y="336" class="body">商品图片分类</text><text x="1216" y="336" text-anchor="end" class="small">3.0 人天</text><rect x="974" y="346" width="242" height="8" rx="4" fill="#ece8fb"/><rect x="974" y="346" width="165" height="8" rx="4" fill="#7b4dff"/>
+  <text x="974" y="382" class="body">道路目标框选</text><text x="1216" y="382" text-anchor="end" class="small">2.2 人天</text><rect x="974" y="392" width="242" height="8" rx="4" fill="#ece8fb"/><rect x="974" y="392" width="121" height="8" rx="4" fill="#7b4dff"/>
+  <text x="974" y="428" class="body">文本实体标注</text><text x="1216" y="428" text-anchor="end" class="small">2.0 人天</text><rect x="974" y="438" width="242" height="8" rx="4" fill="#ece8fb"/><rect x="974" y="438" width="110" height="8" rx="4" fill="#7b4dff"/>
+  <text x="974" y="482" class="section">03  本周亮点</text>
+  <rect x="974" y="496" width="242" height="74" rx="10" fill="#f3fbf7"/>
+  <text x="990" y="520" class="body" font-weight="700" fill="#16855b">文本标注质量稳定</text><text x="990" y="542" class="small muted">正样本率 94.6%</text><text x="990" y="559" class="small muted">目标进度 91.6%</text>
+  <text x="974" y="608" class="section">04  下周关注</text>
+  <rect x="974" y="622" width="242" height="66" rx="10" fill="#fff7e8"/>
+  <circle cx="991" cy="644" r="4" fill="#e07b22"/><text x="1003" y="648" class="small">目标框选库存 2,200</text>
+  <circle cx="991" cy="667" r="4" fill="#e07b22"/><text x="1003" y="671" class="small">预计 6.9 人天达到目标</text>
+</svg>
