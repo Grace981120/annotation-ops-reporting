@@ -60,23 +60,23 @@ def _detailed_report(daily):
             {
                 "submitter": "甲",
                 "baseline_rate": 1.2,
-                "task_name": "人员轨迹",
+                "task_name": "商品图片分类",
             },
             {
                 "submitter": "乙",
                 "baseline_rate": 1.0,
-                "task_name": "人体检测",
+                "task_name": "道路目标框选",
             },
             {
                 "submitter": "丙",
                 "baseline_rate": 0.9,
-                "task_name": "人员倒地-学校",
+                "task_name": "客服文本实体标注",
             },
         ],
         "low_baseline_records": [
             {
                 "submitter": "丁",
-                "task_name": "人员倒地-外部数据源",
+                "task_name": "会议音频转写",
                 "completed": 20,
                 "resolved_unit": "个视频",
                 "input_days": 1.0,
@@ -85,9 +85,9 @@ def _detailed_report(daily):
         ],
         "task_input_distribution": [
             {
-                "name": "人员轨迹（2人参与）",
+                "name": "商品图片分类（2人参与）",
                 "value": 2.0,
-                "task_name": "人员轨迹",
+                "task_name": "商品图片分类",
             }
         ],
         "metrics_fallback_updated_at": "-",
@@ -110,7 +110,7 @@ def _detailed_report(daily):
         "detailed_records_sorted": [
             {
                 "submitter": "甲",
-                "task_name": "人员轨迹",
+                "task_name": "商品图片分类",
                 "resolved_task_type": "数据标注",
                 "completed": 120,
                 "resolved_unit": "人",
@@ -133,8 +133,8 @@ def test_weekly_period_is_previous_friday_through_thursday():
 def test_working_staff_uses_public_template_field_name():
     daily = _load_daily_module()
     response = {
-        "fields": ["人员", "是否在岗"],
-        "data": [[[{"name": "甲"}], "工作中"]],
+        "fields": ["人员", "模拟人员", "是否在岗"],
+        "data": [[[{"name": "甲"}], "", "工作中"]],
     }
 
     with patch.object(daily, "run_lark_base", return_value=response) as run:
@@ -143,6 +143,54 @@ def test_working_staff_uses_public_template_field_name():
     args = run.call_args.args[0]
     assert "人员" in args
     assert "人员 (人员 )" not in args
+
+
+def test_working_staff_falls_back_to_mock_name():
+    daily = _load_daily_module()
+    response = {
+        "fields": ["人员", "模拟人员", "是否在岗"],
+        "data": [[[], "标注员甲", "工作中"]],
+    }
+
+    with patch.object(daily, "run_lark_base", return_value=response):
+        assert daily.get_working_staff() == ["标注员甲"]
+
+
+def test_progress_records_fall_back_to_mock_submitter():
+    daily = _load_daily_module()
+    fields = [
+        "提交人",
+        "模拟提交人",
+        "关联任务",
+        "任务类型",
+        "当日完成量",
+        "单位",
+        "当日投入时间(天)",
+        "基线达成率",
+        "提交日期",
+    ]
+    response = {
+        "fields": fields,
+        "record_id_list": ["record_demo"],
+        "data": [
+            [
+                [],
+                "标注员甲",
+                [],
+                "数据标注",
+                800,
+                "张",
+                1,
+                1,
+                "2026-08-03",
+            ]
+        ],
+    }
+
+    with patch.object(daily, "run_lark_base", return_value=response):
+        records = daily.get_daily_records(date(2026, 8, 3))
+
+    assert records[0]["submitters"] == ["标注员甲"]
 
 
 def test_progress_range_uses_supported_exclusive_date_operators():
@@ -241,7 +289,7 @@ def test_weekly_daily_reviews_include_thursday_end_date():
     records = [
         _record(
             submitter="甲",
-            task_name="人员轨迹",
+            task_name="商品图片分类",
             baseline_rate=1.0,
             input_days=1.0,
             submitted_date=thursday,
@@ -407,7 +455,7 @@ def test_optimized_detailed_card_allows_empty_input_distribution():
 def test_person_trail_prediction_uses_bitable_value_directly():
     daily = _load_daily_module()
     record = {
-        "task_name": "人员轨迹",
+        "task_name": "商品图片分类",
         "positive": 13123,
         "pending": 714,
         "positive_rate": 0.608,
@@ -422,7 +470,7 @@ def test_person_trail_prediction_uses_bitable_value_directly():
 def test_non_person_trail_prediction_keeps_bitable_value():
     daily = _load_daily_module()
     record = {
-        "task_name": "人体检测",
+        "task_name": "道路目标框选",
         "positive": 100,
         "pending": 50,
         "positive_rate": 0.5,
@@ -593,7 +641,7 @@ def test_weekly_card_warns_on_shortfall_and_uses_local_collapsible_reviews():
         },
         "metrics_records": [
             {
-                "task_name": "人员轨迹",
+                "task_name": "商品图片分类",
                 "current_numerator": 80,
                 "target": 100,
                 "current_progress": 0.8,
@@ -607,12 +655,12 @@ def test_weekly_card_warns_on_shortfall_and_uses_local_collapsible_reviews():
             }
         ],
         "task_input_distribution": [
-            {"name": "人员轨迹（1人参与）", "value": 1.0, "task_name": "人员轨迹"}
+            {"name": "商品图片分类（1人参与）", "value": 1.0, "task_name": "商品图片分类"}
         ],
         "efficiency_rows": [
             {
                 "submitter": "甲",
-                "tasks": ["人员轨迹"],
+                "tasks": ["商品图片分类"],
                 "record_count": 1,
                 "input_days": 1.0,
                 "average_rate": 0.9,
@@ -626,13 +674,13 @@ def test_weekly_card_warns_on_shortfall_and_uses_local_collapsible_reviews():
                 "report_count": 1,
                 "input_days": 1.0,
                 "ranking": [
-                    {"submitter": "甲", "baseline_rate": 0.9, "task_name": "人员轨迹"}
+                    {"submitter": "甲", "baseline_rate": 0.9, "task_name": "商品图片分类"}
                 ],
                 "top_tasks": [
                     {
-                        "name": "人员轨迹（1人参与）",
+                        "name": "商品图片分类（1人参与）",
                         "value": 1.0,
-                        "task_name": "人员轨迹",
+                        "task_name": "商品图片分类",
                     }
                 ],
             }
@@ -655,7 +703,7 @@ def test_weekly_card_warns_on_shortfall_and_uses_local_collapsible_reviews():
     assert "任务基线" not in rendered
     assert "视频标注产能" in rendered
     assert "图片标注产能" in rendered
-    assert "人员轨迹 1.00人天" in rendered
+    assert "商品图片分类 1.00人天" in rendered
     assert "投入分布（天）" not in rendered
     assert "weekly_eff_table" not in rendered
     assert [column["name"] for column in kv_table["columns"]] == [

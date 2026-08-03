@@ -52,7 +52,7 @@ METRIC_CODES = (
 
 # ─── SQL 查询 ─────────────────────────────────────────────
 
-# 人员轨迹待标注量：带人体序列且状态为 pending 的轨迹条数。
+# 示例覆盖类任务：统计具备有效序列且状态为 pending 的样本数。
 SQL_TRAIL_SAMPLEABLE = """
 SELECT COUNT(*) AS pending_trajectory_count
 FROM trace t
@@ -255,7 +255,7 @@ WHERE o.security_enabled = 1
 
 
 def validate_fall_reconciliation(reconciliation):
-    """校验人员倒地两个来源与未拆分口径严格对账。"""
+    """校验分来源任务与未拆分口径严格对账。"""
     checks = (
         ("总量", "all_fall", "external_fall", "school_fall"),
         ("待标注", "sampleable_all", "sampleable_external", "sampleable_school"),
@@ -274,7 +274,7 @@ def validate_fall_reconciliation(reconciliation):
         school = int(reconciliation.get(school_key) or 0)
         if total != external + school:
             raise RuntimeError(
-                f"人员倒地{label}对账失败: 全部={total}, "
+                f"分来源任务{label}对账失败: 全部={total}, "
                 f"外部数据源={external}, 学校={school}"
             )
 
@@ -391,7 +391,7 @@ def query_metrics(mysql_host, mysql_port, db_password):
         for code in METRIC_CODES
     }
 
-    # 1. 人员轨迹：轨迹量与学生覆盖数分开统计
+    # 1. 示例覆盖类任务：样本量与去重对象覆盖数分开统计
     with conn.cursor() as cur:
         print(
             "query_source: trace + person + organizations — "
@@ -468,7 +468,7 @@ def query_metrics(mysql_host, mysql_port, db_password):
         }
         validate_fall_reconciliation(reconciliation)
         print(
-            "  人员倒地来源对账通过: "
+            "  分来源任务来源对账通过: "
             f"全部={reconciliation['all_fall']}, "
             f"外部数据源={reconciliation['external_fall']}, "
             f"学校={reconciliation['school_fall']}, "
@@ -481,13 +481,13 @@ def query_metrics(mysql_host, mysql_port, db_password):
     print("📊 查询结果:")
     for key, fields in metrics.items():
         name = {
-            "trail": "人员轨迹",
-            "fallDetect_school": "人员倒地-学校",
-            "fallDetect_external": "人员倒地-外部数据源",
-            "climbDetect": "攀高",
-            "smokeAlarm": "吸烟",
-            "calling": "打电话",
-            "strongExercise": "剧烈运动",
+            "trail": "任务 A",
+            "fallDetect_school": "任务 B",
+            "fallDetect_external": "任务 C",
+            "climbDetect": "任务 D",
+            "smokeAlarm": "任务 E",
+            "calling": "任务 F",
+            "strongExercise": "任务 G",
         }.get(key, key)
         values = ", ".join(f"{field}={value}" for field, value in fields.items())
         print(f"  {name} ({key}): {values}")

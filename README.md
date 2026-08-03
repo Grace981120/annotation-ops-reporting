@@ -82,7 +82,7 @@ set +a
 
 ### 2. 准备多维表格
 
-在自己的飞书空间创建一个 Base，按 [多维表格模板结构](docs/base-schema.md) 建立四张表。模板只需要写入任务名称和目标，不要导入真实人员或历史日报作为代码样例。
+在自己的飞书空间创建一个 Base，按 [多维表格模板结构](docs/base-schema.md) 建立四张表。公开演示请使用“商品图片分类、道路目标框选”等通用 mock 任务，以及“标注员甲/乙/丙”等模拟姓名，不要导入真实人员、客户名称或历史日报。
 
 然后把 Base token、四张表的 table ID，以及“标注指标”各行的 record ID 写入本地 `.env`。这些值属于部署配置，不能提交到 GitHub。
 
@@ -92,6 +92,7 @@ set +a
 
 - `ANNOTATION_MYSQL_*`：只读数据库连接
 - `ANNOTATION_BASE_TOKEN` 与四个 `*_TABLE_ID`
+- `ANNOTATION_TASK_NAMES_JSON`：报表中展示的任务及顺序
 - `ANNOTATION_RECORD_MAP_JSON`：指标 code 到记录 ID 的映射
 - `ANNOTATION_*_WEBHOOK_URL`：详细日报、管理摘要、周报的机器人地址
 
@@ -134,7 +135,7 @@ python scripts/send_annotation_team_daily.py --skip-sync
 
 ## 数据口径
 
-参考实现覆盖人员轨迹和多类异常行为，统计待标注、已标注、正样本、本周正样本和人员覆盖等指标。人员倒地按自有数据与外部数据源拆分，并在写表前执行总量对账。
+参考实现展示待标注、已标注、正样本、本周正样本和覆盖数量等运营指标。底层 SQL 仅作为查询适配器，公开报表中的任务名称通过环境变量配置，不需要暴露内部项目名称。
 
 SQL 依赖示例业务表结构，接入自己的平台时需要修改查询，但报表数据集、卡片构建、重试与校验逻辑可以复用。
 
