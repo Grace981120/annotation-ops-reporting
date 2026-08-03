@@ -21,6 +21,7 @@ GitHub 不能直接托管一个可运行的飞书多维表格，因此仓库用�
 | --- | --- | --- |
 | 日报记录 | 文本（主字段） | 建议填写“日期-姓名-任务” |
 | 提交人 | 人员（单选） | 实际提交者 |
+| 模拟提交人 | 文本 | 仅用于不关联真实账号的演示数据 |
 | 关联任务 | 关联记录 | 关联“项目任务” |
 | 任务类型 | 单选 | 数据标注、数据处理、其他 |
 | 当日完成量 | 数字 | 当日产出 |
@@ -37,11 +38,12 @@ GitHub 不能直接托管一个可运行的飞书多维表格，因此仓库用�
 | --- | --- | --- |
 | 成员说明 | 文本（主字段） | 显示名称或备注 |
 | 人员 | 人员（单选） | 飞书成员 |
+| 模拟人员 | 文本 | 仅用于不关联真实账号的演示数据 |
 | 是否在岗 | 单选 | 工作中、已离岗；默认工作中 |
 
 ## 4. 标注指标
 
-保存数据库同步后的库存、产出、正样本与目标预测。建议预置“人员轨迹、人体检测、人员倒地-学校、人员倒地-外部数据源、攀高、吸烟、打电话、剧烈运动”八行。
+保存数据库同步后的库存、产出、正样本与目标预测。建议使用“商品图片分类、道路目标框选、客服文本实体标注、会议音频转写、短视频片段切分、多模态结果质检”等通用 mock 任务；不要把真实客户或内部项目名称放入公开模板。
 
 | 字段 | 类型 |
 | --- | --- |
@@ -66,9 +68,10 @@ ANNOTATION_PROJECT_TABLE_ID=replace_me
 ANNOTATION_DAILY_TABLE_ID=replace_me
 ANNOTATION_STAFF_TABLE_ID=replace_me
 ANNOTATION_METRICS_TABLE_ID=replace_me
+ANNOTATION_TASK_NAMES_JSON=["商品图片分类","道路目标框选","客服文本实体标注","会议音频转写","短视频片段切分","多模态结果质检"]
 ```
 
-`ANNOTATION_RECORD_MAP_JSON` 将数据库指标 code 映射到“标注指标”的真实记录 ID。`人体检测` 仅用于日报展示，当前参考 SQL 不会自动更新它，因此无需加入映射。
+`ANNOTATION_RECORD_MAP_JSON` 将数据库指标 code 映射到“标注指标”的真实记录 ID。展示名称由 `ANNOTATION_TASK_NAMES_JSON` 控制，可与底层查询 code 解耦。
 
 ```dotenv
 ANNOTATION_RECORD_MAP_JSON={"trail":"record_id","fallDetect_school":"record_id","fallDetect_external":"record_id","climbDetect":"record_id","smokeAlarm":"record_id","calling":"record_id","strongExercise":"record_id"}

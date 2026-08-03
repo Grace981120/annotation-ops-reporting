@@ -45,16 +45,14 @@ WEEKLY_WEBHOOK_SERVICE = os.getenv(
 
 LARK_TENANT_DOMAIN = os.getenv("LARK_TENANT_DOMAIN", "feishu.cn")
 BASE_URL = f"https://{LARK_TENANT_DOMAIN}/base/{BASE_TOKEN}"
-TARGET_TASK_NAMES = [
-    "人员轨迹",
-    "人体检测",
-    "人员倒地-学校",
-    "人员倒地-外部数据源",
-    "攀高",
-    "吸烟",
-    "打电话",
-    "剧烈运动",
-]
+TARGET_TASK_NAMES = json.loads(
+    os.getenv(
+        "ANNOTATION_TASK_NAMES_JSON",
+        "[\"商品图片分类\",\"道路目标框选\",\"客服文本实体标注\","
+        "\"会议音频转写\",\"短视频片段切分\",\"多模态结果质检\"]",
+    )
+)
+COVERAGE_TASK_NAME = os.getenv("ANNOTATION_COVERAGE_TASK_NAME", "")
 
 
 @dataclass
@@ -122,7 +120,7 @@ def run_sync_script() -> SyncResult:
     success = result.returncode == 0
     fall_line = "未知"
     for line in output.splitlines():
-        if "人员倒地来源对账通过" in line:
+        if "来源对账通过" in line:
             fall_line = line.strip()
             break
     summary = "同步成功" if success else "本次平台刷新失败"
@@ -218,6 +216,15 @@ def format_daily_baseline(value: float | None, unit: str | None) -> str:
     return f"{value:.1f} {unit_text}/日"
 
 
+def metrics_scope_note() -> str:
+    if COVERAGE_TASK_NAME:
+        return (
+            f"{COVERAGE_TASK_NAME}按去重对象数统计，其他任务按样本数量统计；"
+            "预计工期为达到目标所需投入人天。"
+        )
+    return "各任务按样本数量统计；预计工期为达到目标所需投入人天。"
+
+
 def normalize_user_list(cell: Any) -> list[str]:
     if not isinstance(cell, list):
         return []
@@ -271,6 +278,8 @@ def get_progress_records(start_date: date, end_date: date) -> list[dict[str, Any
             "--field-id",
             "提交人",
             "--field-id",
+            "模拟提交人",
+            "--field-id",
             "关联任务",
             "--field-id",
             "任务类型",
@@ -292,10 +301,13 @@ def get_progress_records(start_date: date, end_date: date) -> list[dict[str, Any
     records: list[dict[str, Any]] = []
     for record_id, row in zip(data["record_id_list"], data["data"]):
         item = dict(zip(fields, row))
+        submitters = normalize_user_list(item["提交人"])
+        if not submitters and item.get("模拟提交人"):
+            submitters = [str(item["模拟提交人"]).strip()]
         records.append(
             {
                 "record_id": record_id,
-                "submitters": normalize_user_list(item["提交人"]),
+                "submitters": submitters,
                 "task_ids": normalize_link_ids(item["关联任务"]),
                 "task_type": item["任务类型"],
                 "completed": parse_float(item["当日完成量"]) or 0.0,
@@ -330,6 +342,8 @@ def get_working_staff() -> list[str]:
             "--field-id",
             "人员",
             "--field-id",
+            "模拟人员",
+            "--field-id",
             "是否在岗",
             "--limit",
             "200",
@@ -337,7 +351,10 @@ def get_working_staff() -> list[str]:
     )
     users: list[str] = []
     for row in data["data"]:
-        users.extend(normalize_user_list(row[0]))
+        names = normalize_user_list(row[0])
+        if not names and row[1]:
+            names = [str(row[1]).strip()]
+        users.extend(names)
     return sorted(set(users))
 
 
@@ -695,7 +712,7 @@ def build_report_dataset(today: date, sync_result: SyncResult) -> dict[str, Any]
         task_id = record["project_task_ids"][0] if record["project_task_ids"] else None
         task_meta = project_task_map.get(task_id or "", {})
         target = record["target"]
-        if record["task_name"] == "人员轨迹":
+        if COVERAGE_TASK_NAME and record["task_name"] == COVERAGE_TASK_NAME:
             numerator = record["positive_student_count"]
             pending_value = record["uncovered_pending_students"]
         else:
@@ -774,7 +791,7 @@ def build_weekly_report_dataset(
     fallback_updated_at = "-"
     for record in metrics_records:
         target = record["target"]
-        if record["task_name"] == "人员轨迹":
+        if COVERAGE_TASK_NAME and record["task_name"] == COVERAGE_TASK_NAME:
             numerator = record["positive_student_count"]
             pending_value = record["uncovered_pending_students"]
         else:
@@ -1249,8 +1266,7 @@ def optimized_detailed_card(report: dict[str, Any]) -> dict[str, Any]:
         )
     elements.append(
         markdown_block(
-            "<font color='grey'>人员轨迹按学生人数统计，其他任务按样本数量统计；"
-            "预计工期为达到目标所需投入人天。</font>",
+            f"<font color='grey'>{metrics_scope_note()}</font>",
             margin="0px",
             text_size="notation",
         )
@@ -1655,8 +1671,7 @@ def detailed_card(report: dict[str, Any]) -> dict[str, Any]:
         )
     elements.append(
         markdown_block(
-            "<font color='grey'>人员轨迹按学生人数统计，其他任务按样本数量统计；"
-            "预计工期为达到目标所需投入人天。</font>"
+            f"<font color='grey'>{metrics_scope_note()}</font>"
         )
     )
     kv_rows = []
@@ -1910,8 +1925,7 @@ def formal_card(report: dict[str, Any]) -> dict[str, Any]:
     elements.append(markdown_block("**标注平台综合进度**"))
     elements.append(
         markdown_block(
-            "<font color='grey'>人员轨迹按学生人数统计，其他任务按样本数量统计；"
-            "预计工期为达到目标所需投入人天。</font>"
+            f"<font color='grey'>{metrics_scope_note()}</font>"
         )
     )
     kv_rows = []
@@ -2085,8 +2099,7 @@ def weekly_card(report: dict[str, Any]) -> dict[str, Any]:
         )
     elements.append(
         markdown_block(
-            "<font color='grey'>人员轨迹按学生人数统计，其他任务按样本数量统计；"
-            "预计工期为达到目标所需投入人天。</font>"
+            f"<font color='grey'>{metrics_scope_note()}</font>"
         )
     )
     kv_rows = []
